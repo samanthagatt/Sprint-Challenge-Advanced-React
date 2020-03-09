@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import axios from "axios";
 import { Typography, Grid } from "@material-ui/core";
 import CountryCard from "./components/CountryCard";
+import { Switch, Route } from "react-router-dom";
 
 class App extends Component {
   state = { data: {countries: [], indexStore: {}} }
@@ -35,11 +36,18 @@ class App extends Component {
     return (
       <>
         <Typography variant="h3" component="h1" gutterBottom>Women's World Cup</Typography>
-        <Grid container justify="center" alignItems="center">
-          {this.state.data.countries.map(([name, key, data]) => {
-            return <CountryCard key={key} name={name} data={data} />
-          })}
-        </Grid>
+        <Switch>
+          <Route exact path="/">
+            <Grid container justify="center" alignItems="center">
+              {this.state.data.countries.map(([name, key, data]) => {
+                return <CountryCard key={key} name={name} data={data} />
+              })}
+            </Grid>
+          </Route>
+          <Route>
+              <Typography variant="h4" component="h2">404: Not Found</Typography>
+          </Route>
+        </Switch>
       </>
     )
   }
