@@ -1,18 +1,25 @@
 import React, { Component } from "react";
 import axios from "axios";
-import { Typography, Grid } from "@material-ui/core";
-import CountryCard from "./components/CountryCard";
-import { Switch, Route } from "react-router-dom";
+import { Typography, Button, ButtonGroup, withStyles } from "@material-ui/core";
+import { Switch, Route, Link } from "react-router-dom";
+import CountryList from "./components/CountryList";
+import WomenList from "./components/WomenList";
+
+const styles = () => ({
+  nav: {
+    marginBottom: 20
+  }
+})
 
 class App extends Component {
-  state = { data: {countries: [], indexStore: {}} }
+  state = { data: [], structuredData: {countries: [], indexStore: {}}, shouldReloadWomenList: false }
 
   componentDidMount() {
     axios.get("http://localhost:5000/api/players")
       .then(res => {
-        this.setState({ data: this.restructureData(res.data) });
+        this.setState({ data: res.data, structuredData: this.restructureData(res.data), shouldReloadWomenList: true });
       }).catch(err => {
-        alert(`An error occurred while trying to fetch data:\n ${err}`);
+        alert(`An error occurred while trying to fetch data:\n\n ${err}`);
       })
   }
 
@@ -32,20 +39,31 @@ class App extends Component {
     return {countries: obj.countries, indexStore: obj.indexStore};
   }
 
+  getWomenFromCountry = (country) => {
+    const index = this.state.structuredData.indexStore[country];
+    return this.state.structuredData.countries[index] || [];
+  }
+
   render() {
     return (
       <>
         <Typography variant="h3" component="h1" gutterBottom>Women's World Cup</Typography>
+        <ButtonGroup className={this.props.classes.nav} variant="contained" size="large" component="nav">
+          <Button component={Link} to="/">Home</Button>
+          <Button component={Link} to="/countries">By Country</Button>
+        </ButtonGroup>
         <Switch>
           <Route exact path="/">
-            <Grid container justify="center" alignItems="center">
-              {this.state.data.countries.map(([name, key, data]) => {
-                return <CountryCard key={key} name={name} data={data} />
-              })}
-            </Grid>
+            <WomenList women={this.state.data} />
+          </Route>
+          <Route path="/countries/:country">
+            <WomenList getWomenFromCountry={this.getWomenFromCountry} shouldReloadWomenList />
+          </Route>
+          <Route path="/countries">
+            <CountryList countries={this.state.structuredData.countries} />
           </Route>
           <Route>
-              <Typography variant="h4" component="h2">404: Not Found</Typography>
+            <Typography variant="h4" component="h2">404: Not Found</Typography>
           </Route>
         </Switch>
       </>
@@ -53,4 +71,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default withStyles(styles)(App);
